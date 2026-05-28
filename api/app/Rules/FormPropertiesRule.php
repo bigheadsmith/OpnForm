@@ -96,6 +96,22 @@ class FormPropertiesRule implements ValidationRule, ValidatorAwareRule
             }
         }
 
+        // Enforce unique IDs across all properties
+        $ids = array_filter(array_column($value, 'id'), fn($id) => $id !== null && $id !== '');
+        $duplicateIds = array_filter(array_count_values($ids), fn($count) => $count > 1);
+
+        if (!empty($duplicateIds)) {
+            foreach ($value as $index => $property) {
+                if (isset($property['id']) && $property['id'] !== '' && isset($duplicateIds[$property['id']])) {
+                    $errorKey = "properties.{$index}.id";
+                    if (!isset($allErrors[$errorKey])) {
+                        $allErrors[$errorKey] = [];
+                    }
+                    $allErrors[$errorKey][] = "The id for form block number " . ($index + 1) . " must be unique.";
+                }
+            }
+        }
+
         // Add errors directly to the validator's message bag
         // This ensures proper error format matching Laravel's wildcard validation
         if ($this->validator && !empty($allErrors)) {
