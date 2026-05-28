@@ -181,6 +181,52 @@ describe('FormPropertiesRule', function () {
             expect($validator->errors()->has('properties.0.width'))->toBeTrue();
         });
 
+        it('fails when id contains invalid characters', function () {
+            $rules = [
+                'properties' => ['required', 'array', new FormPropertiesRule()],
+            ];
+
+            $data = [
+                'properties' => [
+                    [
+                        'id' => 'title with spaces',
+                        'name' => 'Title',
+                        'type' => 'text',
+                    ],
+                ],
+            ];
+
+            $validator = $this->app['validator']->make($data, $rules);
+            expect($validator->passes())->toBeFalse();
+            expect($validator->errors()->has('properties.0.id'))->toBeTrue();
+        });
+
+        it('fails when property ids are duplicated', function () {
+            $rules = [
+                'properties' => ['required', 'array', new FormPropertiesRule()],
+            ];
+
+            $data = [
+                'properties' => [
+                    [
+                        'id' => 'duplicate',
+                        'name' => 'Title',
+                        'type' => 'text',
+                    ],
+                    [
+                        'id' => 'duplicate',
+                        'name' => 'Email',
+                        'type' => 'email',
+                    ],
+                ],
+            ];
+
+            $validator = $this->app['validator']->make($data, $rules);
+            expect($validator->passes())->toBeFalse();
+            expect($validator->errors()->has('properties.0.id'))->toBeTrue();
+            expect($validator->errors()->has('properties.1.id'))->toBeTrue();
+        });
+
         it('passes with valid width value', function () {
             $rules = [
                 'properties' => ['required', 'array', new FormPropertiesRule()],

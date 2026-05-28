@@ -23,6 +23,8 @@ class CorePropertyValidator implements PropertyValidatorInterface
         // Required fields
         if (!isset($property['id']) || $property['id'] === '' || $property['id'] === null) {
             $errors['id'] = "The form block number {$position} is missing an id.";
+        } elseif (!preg_match('/^[a-zA-Z0-9_\-]+$/', strval($property['id']))) {
+            $errors['id'] = "The form block number {$position} has an invalid id. IDs may only contain letters, numbers, hyphens, and underscores.";
         }
 
         if (!isset($property['name']) || $property['name'] === '' || $property['name'] === null) {

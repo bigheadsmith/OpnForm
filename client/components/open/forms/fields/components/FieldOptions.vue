@@ -13,6 +13,23 @@
         wrapper-class="mb-2"
         label="Field Name"
       />
+      <text-input
+        name="id"
+        class="mt-2"
+        :form="field"
+        :required="true"
+        wrapper-class="mb-2"
+        label="Field ID"
+        placeholder="Use letters, numbers, hyphens, or underscores"
+        pattern="^[a-zA-Z0-9_\-]+$"
+        help="Unique identifier used for submissions, logic, mentions, and redirects. Must be unique and may only contain letters, numbers, hyphens, and underscores."
+      >
+        <template #error v-if="fieldIdErrors.length">
+          <div class="text-sm text-red-500">
+            <div v-for="(error, index) in fieldIdErrors" :key="index">{{ error }}</div>
+          </div>
+        </template>
+      </text-input>
       <HiddenRequiredDisabled
         class="mt-4"
         :field="field"
@@ -722,6 +739,28 @@ export default {
     },
     shouldEnableSelectSearch() {
       return ['select', 'multi_select'].includes(this.field.type) && this.selectionOptionsCount > 5
+    },
+    fieldIdErrors() {
+      const errors = []
+      const id = this.field?.id?.toString()?.trim() ?? ''
+      const pattern = /^[a-zA-Z0-9_\-]+$/
+
+      if (!id) {
+        errors.push('Field ID is required.')
+      } else {
+        if (!pattern.test(id)) {
+          errors.push('Field ID may only contain letters, numbers, hyphens, and underscores.')
+        }
+
+        if (this.form?.properties) {
+          const duplicateCount = this.form.properties.filter((property) => property?.id === id).length
+          if (duplicateCount > 1) {
+            errors.push('Field ID must be unique among all form fields.')
+          }
+        }
+      }
+
+      return errors
     },
     timezonesOptions() {
       if (this.field.type !== 'date') return []
